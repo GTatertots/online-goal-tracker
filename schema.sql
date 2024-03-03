@@ -1,24 +1,3 @@
-# online-goal-tracker
-
-## Resource
-
-**Goals**
-
-Attributes:
-
-* 
-* 
-
-**Users**
-
-Attributes:
-
-* 
-* 
-
-## SQLite Schema
-
-```sql 
 CREATE TABLE users (
     user_id             INTEGER PRIMARY KEY,
     username            TEXT NOT NULL,
@@ -68,27 +47,3 @@ CREATE TABLE stats (
     foreign key (goal_id) references goals (goal_id)
         on delete cascade
 );
-```
-
-
-## REST Endpoints
-
-Name                  | Method | Path
-----------------------|--------|------------------
-create User           | POST   | /users
-retrieve Users        | GET    | /users
-                      |        |
-follow User           | POST   | /followees
-unfollow User         | DELETE | /followees/followeeID
-retrieve following    | GET    | /followees
-                      |        |
-retrieve followers    | GET    | /followers
-remove follower       | DELETE | /followers/followerID
-                      |        |
-create Goal           | POST   | /goals
-retrieve Goals        | GET    | /goals
-delete Goal           | DELETE | /goals/goalID
-                      |        |
-add Goal (user)       | POST   | /users/userID/goals/
-remove Goal (user)    | DELETE | /users/userID/goals/goalID
-
