@@ -1,18 +1,18 @@
 CREATE TABLE users (
     user_id             INTEGER PRIMARY KEY,
-    username            TEXT NOT NULL,
-    email               TEXT NOT NULL,
+    username            TEXT NOT NULL UNIQUE,
+    email               TEXT NOT NULL UNIQUE,
     first_name          TEXT NOT NULL,
     last_name           TEXT NOT NULL,
     encrypted_password  TEXT NOT NULL
-)
+);
 
 CREATE TABLE goals (
     goal_id     INTEGER PRIMARY KEY,
     title       TEXT NOT NULL,
     frequency   INTEGER NOT NULL,
     timeframe   INTEGER NOT NULL
-)
+);
 
 CREATE TABLE follows (
     user_id     INTEGER NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE follows (
         on delete cascade,
     foreign key (follows_id) references users (user_id)
         on delete cascade
-)
+);
 
 CREATE TABLE has (
     user_id     INTEGER NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE has (
         on delete cascade,
     foreign key (goal_id) references goals (goal_id)
         on delete cascade
-)
+);
 
 CREATE TABLE stats (
     user_id     INTEGER NOT NULL,
