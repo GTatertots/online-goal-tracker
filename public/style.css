@@ -1,0 +1,144 @@
+html {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    background-color: #F2F3F5;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+#app {
+    height:100%;
+}
+
+h1 {
+    margin: 0;
+    padding: 20px 20px 20px;
+    color: white;
+    background-color: #77C9D4;
+}
+
+#notifs {
+    left: 35%;
+    right: 35%;
+    top: 20%;
+    position: absolute;
+    z-index: 2;
+    width: auto;
+    border: 0.5px solid white;
+    padding: 3px;
+    list-style: none;
+    text-align: center;
+    opacity: 1;
+    background-color: #015249;
+    color: white;
+    transition: opacity 5s;
+}
+
+input {
+    box-sizing:border-box;
+    height: 100%;
+    width: 100%;
+}
+
+#landing {
+    background-image: url('sample-background.jpg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 100%;
+}
+
+#landing h2 {
+    color: #015249;
+}
+
+#landing a {
+    color: #77C9D4;
+}
+
+.searchbar {
+    width: 70%;
+    height: 30px;
+    margin-left: 10%;
+    margin-right: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.column {
+    float: left;
+    width: 32%;
+    padding: 0 10px;
+}
+
+.card {
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    padding: 16px;
+    margin-bottom: 10px;
+    text-align: center;
+    transition: 0.2s;
+    background-color: white;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}
+
+.centerBlock {
+    background-color: white;
+    margin: auto;
+    position: absolute;
+    top: 25%;
+    left: 33%;
+    padding: auto;
+    width: 33%;
+    border: 0.5px solid black;
+    border-style: outset;
+    padding:auto;
+    border-radius: 1px;
+    text-align: center;
+}
+
+.centerBlock div {
+    margin-bottom: 8px;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.centerBlock input {
+    height: 40px;
+    width: 100%;
+}
+
+.centerBlock button {
+    height: 40px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #77C9D4;
+    color: white;
+}
+
+#nav {
+    background-color: #77C9D4;
+    overflow: hidden;
+}
+
+#nav a {
+    float: left;
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 20px;
+    text-decoration: none;
+}
+
+#nav a:hover {
+    background-color: #77C1D0;
+    color: white;
+}

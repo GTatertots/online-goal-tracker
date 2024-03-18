@@ -1,13 +1,105 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Goal Tracker</title>
     <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-    <h1>Goal Tracker</h1>
+</head>
+<body>
     <div id="app">
+        <!-- everything vue manages goes here -->
+        
+        <div id="nav" v-show="display != displayLogin && display != displayRegister">
+            <!-- navigation bar stuff -->
+            <h1>Goal Tracker</h1>
+            <a @click="goHome">Home</a>
+            <a @click="goSocial">Find People</a>
+            <a @click="goGoals">Explore Goals</a>
+            <a @click="logout">Logout</a>
+        </div>
+        
+        <ul id="notifs" v-show="displayNotifs">
+            <li v-for="notif, i in notifs">
+                {{ notif }}
+                <button @click="removeNotif(i)"> Ok </button>
+            </li>
+            <li v-show="notifs.length > 1"> <button @click="clearNotifs">clear all</button> </li>
+        </ul>
+        
+        <div id="landing" v-show="display == displayLogin || display == displayRegister">
+            <!-- everything login goes here -->   
+            <div class="centerBlock" v-show="display == displayLogin">
+                <h2>Let's Get Started</h2>
+                <div><input type="text" placeholder="email" v-model="userEmail"></div>
+                <div><input type="text" placeholder="password" v-model="userPassword"></div>
+                <div><button @click="login()">Log in</button></div>
+                <hr style="width: 80%">
+                <h3> Don't have an account? <a @click="goRegister()">Sign Up</a></h3>
+            </div> 
+            
+            <div class="centerBlock" v-show="display == displayRegister"> 
+                <h2>Let's Get Started</h2>
+                <div><input type="text" placeholder="email" v-model="userEmail"></div>
+                <div><input type="text" placeholder="username" v-model="userUsername"></div>
+                <div>
+                    <input style="width: 50%" type="text" placeholder="First" v-model="userFirst"> 
+                    <input style="width: 50%" type="text" placeholder="Last" v-model="userLast">
+                </div>
+                <div><input type="text" placeholder="password" v-model="userPassword"></div>
+                <div><button @click="register()">Sign Up</button></div>
+                <hr style="width: 80%">
+                <h3> Don't have an account? <a @click="goLogin()">Log In</a><h3>
+                
+            </div>
+        </div>
+
+
+        <div v-show="display == displayMain">
+            <!-- everything on the main page goes here-->
+            <input class="searchbar" type="text" placeholder="search goals" v-on:keyup.enter="getUserGoalsFromServer(sessionID)" v-model="goalSearch">
+            <div v-show="goals.length == 0">No goals found. Add some and they'll show up here!</div>
+            <div v-for="goal, i in goals" @click="expandGoal(goal)">
+                <div class="column" v-if="i%3 == 0">
+                    <div class="card">
+                        <div> {{ goal.title }} </div>
+                        <div> {{ goal.description }} </div>
+                        <div> {{ goal.frequency }} / {{ goal.timeframe }} days </div>
+                    </div>
+                </div>
+                <div class="column" v-if="i%3 == 1">
+                    <div class="card">
+                        <div> {{ goal.title }} </div>
+                        <div> {{ goal.description }} </div>
+                        <div> {{ goal.frequency }} / {{ goal.timeframe }} days </div>
+                    </div>
+                </div>
+                <div class="column" v-if="i%3 == 2">
+                    <div class="card">
+                        <div> {{ goal.title }} </div>
+                        <div> {{ goal.description }} </div>
+                        <div> {{ goal.frequency }} / {{ goal.timeframe }} days </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div v-show="display == displaySocial">
+            <!-- everything on the social page goes here-->
+            <input class="searchbar" type="text" placeholder="search users" v-on:keyup.enter="getUsersFromServer()" v-model="userSearch">
+            <div class="user" v-for="user in users" @click="expandUser(user)">
+                <div> {{ user.username }} </div>
+                <div> {{ user.first_name }} {{ user.last_name }} </div>
+            </div>
+        </div>
+    
+
+        <div v-show="display == displayGoals">
+            <!-- everything on the goals page goes here-->
+            viewing the explore goals page now
+        </div>
+
+    </div>
     <script src="https://unpkg.com/vue@3"></script>
     <script src="app.js"></script>
-  </body>
+</body>
 </html>

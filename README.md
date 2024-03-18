@@ -78,17 +78,18 @@ Name                  | Method | Path
 create User           | POST   | /users
 retrieve Users        | GET    | /users
                       |        |
-follow User           | POST   | /followees
-unfollow User         | DELETE | /followees/followeeID
-retrieve following    | GET    | /followees
+follow User           | POST   | /users/userID/followees
+unfollow User         | DELETE | /users/userID/followees/followeeID
+retrieve following    | GET    | /users/userID/followees
                       |        |
-retrieve followers    | GET    | /followers
-remove follower       | DELETE | /followers/followerID
+retrieve followers    | GET    | /users/userID/followers
+remove follower       | DELETE | /users/userID/followers/followerID
                       |        |
 create Goal           | POST   | /goals
 retrieve Goals        | GET    | /goals
 delete Goal           | DELETE | /goals/goalID
                       |        |
 add Goal (user)       | POST   | /users/userID/goals/
+retrieve Goals (user) | GET    | /users/userID/goals/
 remove Goal (user)    | DELETE | /users/userID/goals/goalID
 

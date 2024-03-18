@@ -10,6 +10,7 @@ CREATE TABLE users (
 CREATE TABLE goals (
     goal_id     INTEGER PRIMARY KEY,
     title       TEXT NOT NULL,
+    description TEXT NOT NULL,
     frequency   INTEGER NOT NULL,
     timeframe   INTEGER NOT NULL
 );
