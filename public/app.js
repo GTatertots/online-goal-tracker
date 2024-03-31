@@ -19,6 +19,9 @@ Vue.createApp({
             goalSearch: "",
             goals: [],
 
+            userGoalSearch: "",
+            userGoals: [],
+
             //users
             userSearch: "",
             users: [],
@@ -141,10 +144,30 @@ Vue.createApp({
         },
         
         //server calls
-        getUserGoalsFromServer: function (userID) {
-            var path = "/users/" + userID + "/goals?condition=%";
+        getGoalsFromServer: function () {
+            var path = "/goals?condition=%";
             if(this.goalSearch){
                 path += this.goalSearch + "%";
+            }
+            fetch(SERVER_URL + path, {
+                credentials: "include"
+            }).then((response) => {
+                if(response.status == 401) {
+                    console.log("not logged in");
+                    this.display = this.displayLogin;
+                    return
+                }
+                response.json().then((data) => {
+                    console.log("loaded goals from server:", data);
+                    this.goals = data;
+                })
+            })
+        },
+
+        getUserGoalsFromServer: function (userID) {
+            var path = "/users/" + userID + "/goals?condition=%";
+            if(this.userGoalSearch){
+                path += this.userGoalSearch + "%";
             }
             fetch(SERVER_URL + path, {
                 credentials: "include"
@@ -156,7 +179,7 @@ Vue.createApp({
                 }
                 response.json().then((data) => {
                     console.log("loaded goals from server:", data);
-                    this.goals = data;
+                    this.userGoals = data;
                 });
             });
         },
@@ -194,6 +217,7 @@ Vue.createApp({
         
         //goals
         goGoals: function () {
+            this.getGoalsFromServer();
             this.display = this.displayGoals;
         },
 

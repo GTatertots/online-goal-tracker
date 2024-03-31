@@ -55,26 +55,12 @@
 
         <div v-show="display == displayMain">
             <!-- everything on the main page goes here-->
-            <input class="searchbar" type="text" placeholder="search goals" v-on:keyup.enter="getUserGoalsFromServer(sessionID)" v-model="goalSearch">
-            <div v-show="goals.length == 0">No goals found. Add some and they'll show up here!</div>
-            <div v-for="goal, i in goals" @click="expandGoal(goal)">
-                <div class="column" v-if="i%3 == 0">
+            <input class="searchbar" type="text" placeholder="search goals" v-on:keyup.enter="getUserGoalsFromServer(sessionID)" v-model="userGoalSearch">
+            <div v-show="userGoals.length == 0">No goals found. Add some and they'll show up here!</div>
+            <div v-for="goal, i in userGoals" @click="expandGoal(goal)">
+                <div class="column">
                     <div class="card">
-                        <div> {{ goal.title }} </div>
-                        <div> {{ goal.description }} </div>
-                        <div> {{ goal.frequency }} / {{ goal.timeframe }} days </div>
-                    </div>
-                </div>
-                <div class="column" v-if="i%3 == 1">
-                    <div class="card">
-                        <div> {{ goal.title }} </div>
-                        <div> {{ goal.description }} </div>
-                        <div> {{ goal.frequency }} / {{ goal.timeframe }} days </div>
-                    </div>
-                </div>
-                <div class="column" v-if="i%3 == 2">
-                    <div class="card">
-                        <div> {{ goal.title }} </div>
+                        <div><b> {{ goal.title }} </b></div>
                         <div> {{ goal.description }} </div>
                         <div> {{ goal.frequency }} / {{ goal.timeframe }} days </div>
                     </div>
@@ -96,6 +82,18 @@
         <div v-show="display == displayGoals">
             <!-- everything on the goals page goes here-->
             viewing the explore goals page now
+            <input class="searchbar" type="text" placeholder="search goals" v-on:keyup.enter="getGoalsFromServer()" v-model="goalSearch">
+            <div v-show="goals.length == 0">No goals found. Add some and they'll show up here!</div>
+            <div v-for="goal, i in goals" @click="expandGoal(goal)">
+                <div class="column">
+                    <div class="card">
+                        <div><b> {{ goal.title }} </b></div>
+                        <div> {{ goal.description }} </div>
+                        <div> {{ goal.frequency }} / {{ goal.timeframe }} days </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </div>

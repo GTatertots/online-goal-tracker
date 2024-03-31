@@ -71,13 +71,16 @@ input {
 
 .column {
     float: left;
-    width: 32%;
-    padding: 0 10px;
+    width: 25%;
 }
 
 .card {
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
     padding: 16px;
+    width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+    height: 80px;
     margin-bottom: 10px;
     text-align: center;
     transition: 0.2s;
