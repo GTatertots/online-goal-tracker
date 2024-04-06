@@ -57,6 +57,8 @@
             <!-- everything on the main page goes here-->
             <input class="searchbar" type="text" placeholder="search goals" v-on:keyup.enter="getUserGoalsFromServer(sessionID)" v-model="userGoalSearch">
             <div v-show="userGoals.length == 0">No goals found. Add some and they'll show up here!</div>
+            <button @click="goCreateGoal">Create a goal!</button>
+            <button @click="goGoals">Find a goal!</button>
             <div v-for="goal, i in userGoals" @click="expandGoal(goal)">
                 <div class="column">
                     <div class="card">
@@ -93,7 +95,15 @@
                     </div>
                 </div>
             </div>
-
+        </div>
+        <div class="goalForm" v-show="display == displayCreateGoal">
+            <!-- everything on the create goals page goes here-->
+            <h2>Set a goal for yourself (and others!)</h2>
+            <div><input type="text" placeholder="title your goal" v-model="goalTitle"></div>
+            <div><input type="text" placeholder="give a description of your goal" v-model="goalDescription"></div>
+            <div><input type="text" placeholder="how often should this goal be accomplished per timeframe?" v-model="goalFrequency"></div>
+            <div><input type="text" placeholder="what is the timeframe of this goal?" v-model="goalTimeframe"></div>
+            <div><button @click="createAndAddGoal()">Set Goal</button></div>
         </div>
 
     </div>

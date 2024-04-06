@@ -225,11 +225,11 @@ module.exports = {
         return new Promise(function (resolve, reject) {
             const db = new sqlite3.Database(DB);
             db.serialize(() => {
-                db.run('INSERT INTO goals (title,description,frequency,timeframe) VALUES (?,?,?,?)',[title,description,frequency,timeframe], (err) => {
+                db.run('INSERT INTO goals (title,description,frequency,timeframe) VALUES (?,?,?,?)',[title,description,frequency,timeframe], function (err) {
                     if (err) {
                         reject(err);
                     } else {
-                        resolve();
+                        resolve(this.lastID);
                     }
                 })
             })
@@ -253,6 +253,53 @@ module.exports = {
         });
     },
 
+    createStat: function(userId, goalId, day, month, year, stat) {
+        return new Promise(function (resolve, reject) {
+            const db = new sqlite3.Database(DB);
+            db.serialize(() => {
+                db.run('INSERT INTO stats (user_id, goal_id, day, month, year, status) VALUES (?,?,?,?,?,?)', [userId, goalId, day, month, year, stat], (err) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                })
+            })
+            db.close();
+        });
+    },
+
+    retrieveStats: function(userId, goalId) {
+        return new Promise(function (resolve, reject) {
+            const db = new sqlite3.Database(DB);
+            db.serialize(() => {
+                db.all('SELECT * FROM stats WHERE user_id = ? AND goal_id = ?',[userId, goalId], (err, rows) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(rows);
+                    }
+                })
+            })
+            db.close(); 
+        });
+    },
+    
+    updateStat: function(statID, stat) {
+        return new Promise(function (resolve, reject) {
+            const db = new sqlite3.Database(DB);
+            db.serialize(() => {
+                db.run('UPDATE stats SET status = ? WHERE statID = ?',[stat, statID], (err) => {
+                    if (err) {
+                        reject(err);
+                    } else { 
+                        resolve();
+                    }
+                })
+            })
+            db.close();
+        }); 
+    }
 
 
 }

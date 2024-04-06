@@ -16,11 +16,21 @@ Vue.createApp({
             //errors
 
             //goals
+            createdGoalId: {},
+
+            goalTitle: "",
+            goalDescription: "",
+            goalFrequency: "",
+            goalTimeframe: "",
+            
             goalSearch: "",
             goals: [],
 
             userGoalSearch: "",
             userGoals: [],
+            
+            //expanded goal(s)
+            expandedGoals: [],
 
             //users
             userSearch: "",
@@ -31,7 +41,8 @@ Vue.createApp({
             displayMain: 1,
             displaySocial: 2,
             displayGoals: 3,
-            displayRegister: 4,
+            displayCreateGoal: 4,
+            displayRegister: 55,
 
             display: 1,
             
@@ -49,6 +60,13 @@ Vue.createApp({
             this.userEmail = "";
             this.userFirst = "";
             this.userLast = ""; 
+        },
+
+        clearGoalFields: function () {
+            this.goalTitle = "";
+            this.goalDescription = "";
+            this.goalFrequency = "";
+            this.goalTimeframe = "";
         },
 
         //sessions
@@ -221,6 +239,70 @@ Vue.createApp({
             this.display = this.displayGoals;
         },
 
+        goCreateGoal: function () {
+            this.display = this.displayCreateGoal;
+        },
+
+        expandGoal: function () {
+            this.display = this.singleGoalStats;
+        },
+        
+        createAndAddGoal: function () {
+            this.postGoalServer(this.addUserGoalServer);
+            //this.addUserGoalServer(this.createdGoalId["lastID"]);
+            //this.goHome();
+            this.notifs.push("Successfully Set Goal! You can now see it on this page");
+        },
+
+        postGoalServer: function (callback) {
+            var data = "title=" + encodeURIComponent(this.goalTitle);
+            data += "&description=" + encodeURIComponent(this.goalDescription);
+            data += "&frequency=" + encodeURIComponent(this.goalFrequency);
+            data += "&timeframe=" + encodeURIComponent(this.goalTimeframe);
+            fetch(SERVER_URL + "/goals", {
+                method: "POST",
+                body: data,
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            }).then((response) => {
+                if (response.status != 201) {
+                    this.notifs.push("goal created succesfully");
+                }
+                response.json().then((data) => {
+                    console.log(data)
+                    this.createdGoalId = data;
+                    callback(data['lastID']);
+                });
+                
+                this.displayNotifs = true;
+
+            });
+
+        },
+
+        addUserGoalServer: function (goalID) {
+            console.log(goalID);
+            var data = "goalID=" + encodeURIComponent(goalID);
+            fetch(SERVER_URL + "/users/" + this.sessionID + "/goals", {
+                method: "POST",
+                body: data,
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            }).then((response) => {
+                if (response.status == 201) {
+                    console.log("set goal:", this.goalTitle);
+                    this.clearGoalFields();
+                    this.notifs.push("Set goal succesfully!");
+                } else {
+                    console.error("failed to add goal to user:", response.json());
+                }
+                this.goHome();
+            });
+        },
         
         //notifs
         clearNotifs: function() {

@@ -145,3 +145,25 @@ input {
     background-color: #77C1D0;
     color: white;
 }
+
+.goalForm {
+    background-color: white;
+    margin: auto;
+    position: absolute;
+    top: 25%;
+    left: 25%;
+    padding: auto;
+    width: 50%;
+    border: 0.5px solid black;
+    border-style: outset;
+    padding:auto;
+    border-radius: 1px;
+    text-align: center;
+}
+
+.goalForm div {
+    margin-bottom: 8px;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}

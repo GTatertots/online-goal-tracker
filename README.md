@@ -31,6 +31,7 @@ CREATE TABLE users (
 CREATE TABLE goals (
     goal_id     INTEGER PRIMARY KEY,
     title       TEXT NOT NULL,
+    description TEXT NOT NULL,
     frequency   INTEGER NOT NULL,
     timeframe   INTEGER NOT NULL
 )
@@ -56,13 +57,13 @@ CREATE TABLE has (
 )
 
 CREATE TABLE stats (
+    stat_id     INTEGER PRIMARY KEY,
     user_id     INTEGER NOT NULL,
     goal_id     INTEGER NOT NULL,
     day         INTEGER NOT NULL,
     month       INTEGER NOT NULL,
     year        INTEGER NOT NULL,
     status      INTEGER NOT NULL,
-    primary key (user_id, goal_id, day, month, year),
     foreign key (user_id) references users (user_id)
         on delete cascade,
     foreign key (goal_id) references goals (goal_id)
@@ -88,4 +89,8 @@ delete Goal           | DELETE | /goals/goalID
 add Goal (user)       | POST   | /users/userID/goals/
 retrieve Goals (user) | GET    | /users/userID/goals/
 remove Goal (user)    | DELETE | /users/userID/goals/goalID
+retrieve statistics   | GET    | /users/userID/goals/goalID/stats
+create statistic      | POST   | /users/userID/goals/goalID/stats
+update statistic      | PUT    | /users/userID/goals/goalID/stats/statID
+
 

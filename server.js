@@ -173,8 +173,8 @@ app.get('/goals', authorizeRequest, function (req, res) {
 });
 
 app.get('/users/:userID/goals', authorizeRequest, function (req, res) {
-    console.log(req.params.userID);
-    console.log(req.query.condition);
+    console.log("userID:",req.params.userID);
+    console.log("condition:",req.query.condition);
     db.retrieveUserGoals(req.params.userID,req.query.condition).then((goals) => {
         res.json(goals);
     }).catch((err) => {
@@ -187,9 +187,10 @@ app.get('/users/:userID/goals', authorizeRequest, function (req, res) {
 });
 
 app.post('/goals', authorizeRequest, function (req, res) {
-    db.createGoal(req.body.title,req.body.description,req.body.frequency,req.body.timeframe).then(() => {
-        console.log("new goal created");
-        res.status(201).send("goal created successfully");
+    db.createGoal(req.body.title,req.body.description,req.body.frequency,req.body.timeframe).then((lastID) => {
+        console.log("new goal created with id:",lastID);
+        res.status(201).json({"lastID":lastID});
+        //res.status(201).send("goal created successfully");
     }).catch((err) => {
         if (err) {
             res.status(422).json(err);
@@ -200,11 +201,13 @@ app.post('/goals', authorizeRequest, function (req, res) {
 });
 
 app.post('/users/:userID/goals', authorizeRequest, function (req, res) {
+    console.log("called to add goal:", req.body.goalID)
     db.addGoal(parseInt(req.params.userID),parseInt(req.body.goalID)).then(() => {
         console.log("new goal added");
         res.status(201).send("goal added successfully");
     }).catch((err) => {
         if (err) {
+            console.log(err);
             res.status(422).json(err);
         } else {
             res.status(500).send("server failed to add goal");
@@ -234,6 +237,44 @@ app.delete('/users/:userID/goals/:goalID', authorizeRequest, function (req, res)
             res.status(404).json(err);
         } else {
             res.status(500).send("server failed to remove goal");
+        }
+    });
+});
+
+app.post('/users/:userID/goals/:goalID/stats', authorizeRequest, function (req, res) {
+    db.createStat(parseInt(req.params.userID),parseInt(req.params.goalID),parseInt(req.body.day),parseInt(req.body.month),parseInt(req.body.year),parseInt(req.body.stat)).then(() => {
+        console.log("stat added"); 
+        res.status(201).send("stat added successfully");
+    }).catch((err) => {
+        if (err) {
+            res.status(422).json(err);
+        } else {
+            res.status(500).send("server failed to add stat");
+        }
+    });
+});
+
+app.get('/users/:userID/goals/:goalID/stats', authorizeRequest, function (req, res) {
+    db.retrieveStats(parseInt(req.params.userID),parseInt(req.params.goalID)).then((stats) => {
+        res.json(stats);
+    }).catch((err) => {
+        if (err) {
+            res.status(404).json(err);
+        } else {
+            res.status(500).send("server failed to retrieve goal stats");
+        }
+    }); 
+});
+
+app.put('/stats/:statID', authorizeRequest, function (req, res) {
+    db.updateStat(req.params.statID, req.body.stat).then(() => {
+        console.log("stat updated"); 
+        res.status(200).send("stat updated successfully");
+    }).catch((err) => {
+        if (err) {
+            res.status(404).json(err);
+        } else {
+            res.status(500).send("server failed to update stat");
         }
     });
 });

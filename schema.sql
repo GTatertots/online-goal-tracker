@@ -36,13 +36,13 @@ CREATE TABLE has (
 );
 
 CREATE TABLE stats (
+    stat_id     INTEGER PRIMARY KEY,
     user_id     INTEGER NOT NULL,
     goal_id     INTEGER NOT NULL,
     day         INTEGER NOT NULL,
     month       INTEGER NOT NULL,
     year        INTEGER NOT NULL,
     status      INTEGER NOT NULL,
-    primary key (user_id, goal_id, day, month, year),
     foreign key (user_id) references users (user_id)
         on delete cascade,
     foreign key (goal_id) references goals (goal_id)
