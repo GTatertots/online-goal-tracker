@@ -29,8 +29,11 @@ Vue.createApp({
             userGoalSearch: "",
             userGoals: [],
             
+            goalStats: {},
+
             //expanded goal(s)
             expandedGoals: [],
+            stats: [],
 
             //users
             userSearch: "",
@@ -42,7 +45,8 @@ Vue.createApp({
             displaySocial: 2,
             displayGoals: 3,
             displayCreateGoal: 4,
-            displayRegister: 55,
+            displayRegister: 5,
+            displaySingleGoalStats: 6,
 
             display: 1,
             
@@ -198,6 +202,9 @@ Vue.createApp({
                 response.json().then((data) => {
                     console.log("loaded goals from server:", data);
                     this.userGoals = data;
+                    for (goal of data) {
+                        this.getStatsFromServer(userID, goal.goal_id, 7);
+                    }
                 });
             });
         },
@@ -243,8 +250,12 @@ Vue.createApp({
             this.display = this.displayCreateGoal;
         },
 
-        expandGoal: function () {
-            this.display = this.singleGoalStats;
+        expandGoal: function (goal) {
+            console.log(goal.goal_id);
+            this.expandedGoals.push(goal.goal_id);
+            console.log(this.expandedGoals)
+            //this.display = this.displaySingleGoalStats;
+            this.getStatsFromServer(this.sessionID,goal.goal_id);
         },
         
         createAndAddGoal: function () {
@@ -252,6 +263,17 @@ Vue.createApp({
             //this.addUserGoalServer(this.createdGoalId["lastID"]);
             //this.goHome();
             this.notifs.push("Successfully Set Goal! You can now see it on this page");
+        },
+
+        toggleStat: function(statOBJ) {
+            console.log(statOBJ);
+            var stat;
+            if (statOBJ.status == 1) {
+                stat = 0;
+            } else {
+                stat = 1;
+            }
+            this.replaceStatOnServer(statOBJ, stat);
         },
 
         postGoalServer: function (callback) {
@@ -268,9 +290,10 @@ Vue.createApp({
                 }
             }).then((response) => {
                 if (response.status != 201) {
-                    this.notifs.push("goal created succesfully");
+                    console.log("failed at server to create goal");
                 }
                 response.json().then((data) => {
+                    this.notifs.push("goal created succesfully");
                     console.log(data)
                     this.createdGoalId = data;
                     callback(data['lastID']);
@@ -297,10 +320,105 @@ Vue.createApp({
                     console.log("set goal:", this.goalTitle);
                     this.clearGoalFields();
                     this.notifs.push("Set goal succesfully!");
+                    
+                    //populating stats for newly added goal
+                    const d = new Date();
+                    var day = d.getDate();
+                    var month = d.getMonth();
+                    var year = d.getFullYear();
+                    for (var i = 0; i < 14; i++) {
+                        day -= 1;
+                        if (day == 0) {
+                            month -= 1;
+                            if (month == -1) {
+                                year -= 1;
+                                month = 11;
+                            }
+                            if(month in [0, 2, 4, 6, 7, 9, 11]) {
+                                day = 31;
+                            } else if(month in [3, 5, 8, 10]) {
+                                day = 30;
+                            } else {
+                                day = 28;
+                                if (year % 4 == 0) {
+                                    day += 1;
+                                }
+                            }
+                        }
+                        this.postStatToServer(goalID, day, month, year);
+                    }
+
+
                 } else {
                     console.error("failed to add goal to user:", response.json());
                 }
                 this.goHome();
+            });
+        },
+
+        getStatsFromServer: function(userID, goalID, limit) {
+            console.log("getStats called with:", userID, goalID)
+            var path = "/users/" + userID + "/goals/" + goalID + "/stats";
+            if (limit) {
+                path += "?limit=" + limit;
+            }
+            fetch(SERVER_URL + path, {
+                credentials: "include"
+            }).then((response) => {
+                if(response.status == 401) {
+                    this.notifs.push("not logged in");
+                    this.display = this.displayLogin;
+                    return
+                }   
+                response.json().then((data) => {
+                    this.goalStats[goalID] = data;
+                });
+            }); 
+        },
+
+        postStatToServer: function(goalID, day, month, year) {
+            var data = "day=" + encodeURIComponent(day);
+            data += "&month=" + encodeURIComponent(month);
+            data += "&year=" + encodeURIComponent(year);
+            data += "&stat=" + encodeURIComponent("0");
+            fetch(SERVER_URL + "/users/" + this.sessionID + "/goals/" + goalID + "/stats" , {
+                method: "POST",
+                body: data,
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            }).then((response) => {
+                if (response.status == 201) {
+                    console.log("stat created succesfully");
+                } else {
+                    console.error("failed to create stat:", response.json());
+                }
+            });
+             
+        },
+        
+        replaceStatOnServer: function(statOBJ, stat) {
+            console.log(statOBJ);
+            var path = "/stats/" + statOBJ.stat_id;
+            var data = "stat=" + encodeURIComponent(stat);
+            fetch(SERVER_URL + path, {
+                method: "PUT",
+                body: data,
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            }).then((response) => {
+                if (response.status == 200) {
+                    console.log("stat updated on server");
+                    console.log("stat before:", statOBJ.status);
+                    statOBJ.status = stat;
+                    console.log("stat after:", statOBJ.status);
+                } else {
+                    console.error("failed to update stat:", response.json());
+                }
+
             });
         },
         

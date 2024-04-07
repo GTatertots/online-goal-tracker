@@ -59,17 +59,37 @@
             <div v-show="userGoals.length == 0">No goals found. Add some and they'll show up here!</div>
             <button @click="goCreateGoal">Create a goal!</button>
             <button @click="goGoals">Find a goal!</button>
-            <div v-for="goal, i in userGoals" @click="expandGoal(goal)">
+            <div v-for="goal, i in userGoals">
                 <div class="column">
                     <div class="card">
-                        <div><b> {{ goal.title }} </b></div>
+                        <div @click="expandGoal(goal)"><b> {{ goal.title }} </b></div>
                         <div> {{ goal.description }} </div>
-                        <div> {{ goal.frequency }} / {{ goal.timeframe }} days </div>
+                        <div> target: {{ goal.frequency }}/{{ goal.timeframe }} days </div>
+                        <table>
+                            <tr>
+                                <th v-for="stat in goalStats[goal.goal_id]"> {{ stat.month + 1 }}/{{ stat.day }} </th>
+                            </tr>
+                            <tr>
+                                <td v-for="stat in goalStats[goal.goal_id]"
+                                    @click="toggleStat(stat)" 
+                                    v-bind:style="{ backgroundColor: stat.status == 1 ? '#0E9700' : '#FE0006'}">
+                                    {{ stat.status == 1 ? '&#10004' : '&#10006' }}
+                                </td>
+                            </tr>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
-
+        
+        <!--
+        <div v-show="display == displaySingleGoalStats">
+            <div v-for="stat, i in stats" @click="toggleStat()">
+                <div> {{ stat.month }}/{{ stat.day }} </div>
+                <div> {{ stat.status }} </div>
+            </div> 
+        </div>
+        -->
         
         <div v-show="display == displaySocial">
             <!-- everything on the social page goes here-->
@@ -91,7 +111,8 @@
                     <div class="card">
                         <div><b> {{ goal.title }} </b></div>
                         <div> {{ goal.description }} </div>
-                        <div> {{ goal.frequency }} / {{ goal.timeframe }} days </div>
+                        <div> target: {{ goal.frequency }}/{{ goal.timeframe }} days </div>
+                        <div> <button @click="addUserGoalServer(goal.goal_id)">Set Goal</button></div>
                     </div>
                 </div>
             </div>
@@ -101,9 +122,14 @@
             <h2>Set a goal for yourself (and others!)</h2>
             <div><input type="text" placeholder="title your goal" v-model="goalTitle"></div>
             <div><input type="text" placeholder="give a description of your goal" v-model="goalDescription"></div>
-            <div><input type="text" placeholder="how often should this goal be accomplished per timeframe?" v-model="goalFrequency"></div>
-            <div><input type="text" placeholder="what is the timeframe of this goal?" v-model="goalTimeframe"></div>
-            <div><button @click="createAndAddGoal()">Set Goal</button></div>
+            <div>How often will I do this goal?</div>
+            <div>
+                <input type="number" placeholder="2" style="width: 32px" v-model="goalFrequency">
+                of every
+                <input type="number" placeholder="7" style="width: 32px" v-model="goalTimeframe">
+                days
+                <div><button @click="createAndAddGoal()">Set Goal</button></div>
+            </div>
         </div>
 
     </div>

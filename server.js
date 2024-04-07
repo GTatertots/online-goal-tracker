@@ -242,6 +242,8 @@ app.delete('/users/:userID/goals/:goalID', authorizeRequest, function (req, res)
 });
 
 app.post('/users/:userID/goals/:goalID/stats', authorizeRequest, function (req, res) {
+    console.log("stats params:", req.params);
+    console.log("stats body:", req.body);
     db.createStat(parseInt(req.params.userID),parseInt(req.params.goalID),parseInt(req.body.day),parseInt(req.body.month),parseInt(req.body.year),parseInt(req.body.stat)).then(() => {
         console.log("stat added"); 
         res.status(201).send("stat added successfully");
@@ -255,7 +257,8 @@ app.post('/users/:userID/goals/:goalID/stats', authorizeRequest, function (req, 
 });
 
 app.get('/users/:userID/goals/:goalID/stats', authorizeRequest, function (req, res) {
-    db.retrieveStats(parseInt(req.params.userID),parseInt(req.params.goalID)).then((stats) => {
+    console.log("limit inside SQL Query:", req.query.limit);
+    db.retrieveStats(parseInt(req.params.userID),parseInt(req.params.goalID),parseInt(req.query.limit)).then((stats) => {
         res.json(stats);
     }).catch((err) => {
         if (err) {
@@ -267,6 +270,7 @@ app.get('/users/:userID/goals/:goalID/stats', authorizeRequest, function (req, r
 });
 
 app.put('/stats/:statID', authorizeRequest, function (req, res) {
+    console.log("putStat called with statID:", req.params.statID)
     db.updateStat(req.params.statID, req.body.stat).then(() => {
         console.log("stat updated"); 
         res.status(200).send("stat updated successfully");

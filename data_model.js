@@ -269,11 +269,11 @@ module.exports = {
         });
     },
 
-    retrieveStats: function(userId, goalId) {
+    retrieveStats: function(userId, goalId, limit) {
         return new Promise(function (resolve, reject) {
             const db = new sqlite3.Database(DB);
             db.serialize(() => {
-                db.all('SELECT * FROM stats WHERE user_id = ? AND goal_id = ?',[userId, goalId], (err, rows) => {
+                db.all('SELECT * FROM stats WHERE user_id = ? AND goal_id = ? ORDER BY year DESC, month DESC, day DESC LIMIT ?',[userId, goalId, limit], (err, rows) => {
                     if (err) {
                         reject(err);
                     } else {
@@ -289,7 +289,7 @@ module.exports = {
         return new Promise(function (resolve, reject) {
             const db = new sqlite3.Database(DB);
             db.serialize(() => {
-                db.run('UPDATE stats SET status = ? WHERE statID = ?',[stat, statID], (err) => {
+                db.run('UPDATE stats SET status = ? WHERE stat_id = ?',[stat, statID], (err) => {
                     if (err) {
                         reject(err);
                     } else { 
