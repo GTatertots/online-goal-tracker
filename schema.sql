@@ -43,6 +43,7 @@ CREATE TABLE stats (
     month       INTEGER NOT NULL,
     year        INTEGER NOT NULL,
     status      INTEGER NOT NULL,
+    UNIQUE(user_id,goal_id,day,month,year),
     foreign key (user_id) references users (user_id)
         on delete cascade,
     foreign key (goal_id) references goals (goal_id)

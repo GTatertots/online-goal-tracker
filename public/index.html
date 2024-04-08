@@ -11,10 +11,10 @@
         <div id="nav" v-show="display != displayLogin && display != displayRegister">
             <!-- navigation bar stuff -->
             <h1>Goal Tracker</h1>
-            <a @click="goHome">Home</a>
-            <a @click="goSocial">Find People</a>
-            <a @click="goGoals">Explore Goals</a>
-            <a @click="logout">Logout</a>
+            <a @click="goHome" style="cursor:pointer">Home</a>
+            <a @click="goSocial" style="cursor:pointer">Find People</a>
+            <a @click="goGoals" style="cursor:pointer">Explore Goals</a>
+            <a @click="logout" style="cursor:pointer">Logout</a>
         </div>
         
         <ul id="notifs" v-show="displayNotifs">
@@ -33,7 +33,7 @@
                 <div><input type="text" placeholder="password" v-model="userPassword"></div>
                 <div><button @click="login()">Log in</button></div>
                 <hr style="width: 80%">
-                <h3> Don't have an account? <a @click="goRegister()">Sign Up</a></h3>
+                <h3> Don't have an account? <a @click="goRegister()" style="cursor:pointer">Sign Up</a></h3>
             </div> 
             
             <div class="centerBlock" v-show="display == displayRegister"> 
@@ -62,7 +62,7 @@
             <div v-for="goal, i in userGoals">
                 <div class="column">
                     <div class="card">
-                        <div @click="expandGoal(goal)"><b> {{ goal.title }} </b></div>
+                        <div @click="expandGoal(goal)" style="cursor:pointer"><b> {{ goal.title }} </b></div>
                         <div> {{ goal.description }} </div>
                         <div> target: {{ goal.frequency }}/{{ goal.timeframe }} days </div>
                         <table>
@@ -72,7 +72,8 @@
                             <tr>
                                 <td v-for="stat in goalStats[goal.goal_id]"
                                     @click="toggleStat(stat)" 
-                                    v-bind:style="{ backgroundColor: stat.status == 1 ? '#0E9700' : '#FE0006'}">
+                                    v-bind:style="{ backgroundColor: stat.status == 1 ? '#0E9700' : '#FE0006'}"
+                                    style="cursor:pointer">
                                     {{ stat.status == 1 ? '&#10004' : '&#10006' }}
                                 </td>
                             </tr>

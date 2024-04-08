@@ -203,6 +203,7 @@ Vue.createApp({
                     console.log("loaded goals from server:", data);
                     this.userGoals = data;
                     for (goal of data) {
+                        this.updateStats(userID, goal.goal_id);
                         this.getStatsFromServer(userID, goal.goal_id, 7);
                     }
                 });
@@ -274,6 +275,38 @@ Vue.createApp({
                 stat = 1;
             }
             this.replaceStatOnServer(statOBJ, stat);
+        },
+
+        updateStats: function(userID,goalID) {
+            this.getStatsFromServer(userID,goalID,1);
+            console.log(this.goalStats[goalID])
+            var latest = this.goalStats[goalID][0];
+            console.log(latest.year, latest.month, latest.day);
+            const d = new Date();
+            var day = d.getDate();
+            var month = d.getMonth();
+            var year = d.getFullYear();
+            while (day != latest.day || month != latest.month || year != latest.year) {
+                this.postStatToServer(goalID, day, month, year);
+                day -= 1;
+                if (day == 0) {
+                    month -= 1;
+                    if (month == -1) {
+                        year -= 1;
+                        month = 11;
+                    }
+                    if(month in [0, 2, 4, 6, 7, 9, 11]) {
+                        day = 31;
+                    } else if(month in [3, 5, 8, 10]) {
+                        day = 30;
+                    } else {
+                        day = 28;
+                        if (year % 4 == 0) {
+                            day += 1;
+                        }
+                    }
+                }
+            }  
         },
 
         postGoalServer: function (callback) {
