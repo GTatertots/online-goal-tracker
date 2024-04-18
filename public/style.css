@@ -14,6 +14,21 @@ body {
     height:100%;
 }
 
+
+.button {
+    margin: 10px;
+    padding: 4px;
+    background-color: #77C9D4;
+    color: white;
+    cursor: pointer;
+    border-color: #73C3D0;
+    border-style: outset; 
+}
+
+.button:hover{
+    background-color: #73C3D0;
+}
+
 h1 {
     margin: 0;
     padding: 20px 20px 20px;
@@ -45,10 +60,6 @@ input {
 }
 
 #landing {
-    background-image: url('sample-background.jpg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
     height: 100%;
 }
 
@@ -77,6 +88,56 @@ input {
 .card {
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
     padding: 16px;
+    width: 70%;
+    margin-left: auto;
+    margin-right: auto;
+    height: 180px;
+    margin-bottom: 25px;
+    text-align: center;
+    transition: 0.2s;
+    background-color: white;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}
+
+.card h3 { 
+    color: #015249;
+}
+
+.card b {
+    color: #015249;
+}
+
+.card div {
+    margin-top: 5px;
+}
+
+.card table {
+    margin-top: 12px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+
+table {
+    width: 50%;
+    border: 2px;
+    border-collapse: collapse;
+}
+
+#fullTable tr {
+    height:20px;
+}
+
+#fullTable td th{
+    width: 14.28%;
+}
+
+.user {
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    padding: 16px;
     width: 60%;
     margin-left: auto;
     margin-right: auto;
@@ -87,28 +148,63 @@ input {
     background-color: white;
 }
 
-.card:hover {
+.user:hover {
     box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
 }
 
-.card b {
+.user b {
     color: #015249;
 }
 
-.card table {
-    margin-left: auto;
-    margin-right: auto;
-    width: 80%;
+.row {
+  height:100%;
+
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+#landingImage {
+    height: 100%;
+    object-fit: cover;
+}
+
+#left {
+    height: 100%;
+    float: left;
+    width: 60%;
+    background-image: url("sample-background.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+#right {
+    float: right;
+    background-color: #77C9D4;
+    width: 40%;
+    height: 100%;
+}
+
+#right h1 {
+    text-align:center;
+    font-size: 45pt; 
+    font-family: "Garamond",serif;
+    margin-top: 15%;
 }
 
 .centerBlock {
     background-color: white;
     margin: auto;
-    position: absolute;
-    top: 25%;
-    left: 33%;
+    /*position: absolute;*/
+    margin-top: 10%;
+    margin-bottom: auto;
+    left: 10%;
     padding: auto;
-    width: 33%;
+    width: 80%;
     border: 0.5px solid black;
     border-style: outset;
     padding:auto;

@@ -46,12 +46,14 @@ module.exports = {
         });
     },
 
-    retrieveUsers: function(condition) { 
+    retrieveUsers: function(condition,userID) { 
         return new Promise(function (resolve, reject) {
             console.log("retrieveUsers called")
             const db = new sqlite3.Database(DB);
             db.serialize(() => {
-                db.all('SELECT * FROM users WHERE username LIKE ?1 OR first_name LIKE ?1 OR last_name LIKE ?1',[condition], (err, rows) => {
+                //TODO 
+                db.all('SELECT users.user_id, users.username, users.email, users.first_name, users.last_name, COUNT(CASE WHEN b_has.user_id=?2 THEN 1 END) as count FROM users LEFT JOIN has AS a_has ON users.user_id = a_has.user_id LEFT JOIN has AS b_has ON a_has.goal_id = b_has.goal_id WHERE users.username LIKE ?1 OR users.first_name LIKE ?1 OR users.last_name LIKE ?1 GROUP BY users.username ORDER BY count',[condition,userID], (err, rows) => {
+
                     if (err) {
                         reject(err);
                     } else { 

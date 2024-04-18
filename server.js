@@ -86,7 +86,8 @@ app.post('/users', function (req, res) {
 app.get('/users', authorizeRequest, function (req, res) {
     console.log("get users called");
     console.log("condition:", req.query.condition);
-    db.retrieveUsers(req.query.condition).then((users) => { 
+    console.log("user:", req.query.userID);
+    db.retrieveUsers(req.query.condition, req.query.userID).then((users) => { 
         res.json(users);
     }).catch((err) => {
         if (err) {
@@ -98,7 +99,7 @@ app.get('/users', authorizeRequest, function (req, res) {
 });
 
 app.post('/users/:userID/followees', authorizeRequest, function (req, res) {
-    db.addFollow(req.session.userID, parseInt(req.body.follow_id)).then(() => {
+    db.addFollow(parseInt(req.params.userID), parseInt(req.body.followeeID)).then(() => {
         console.log("new follow created");
         res.status(201).send("followed successfully");
     }).catch((err) => {
@@ -111,7 +112,7 @@ app.post('/users/:userID/followees', authorizeRequest, function (req, res) {
 });
 
 app.delete('/users/:userID/followees/:followeeID', authorizeRequest, function (req, res) {
-    db.removeFollow(userID, followeeID).then(() => {
+    db.removeFollow(parseInt(req.params.userID), parseInt(req.params.followeeID)).then(() => {
         console.log("follow deleted");
         res.status(200).send("unfollowed successfully");
     }).catch((err) => {
@@ -124,7 +125,7 @@ app.delete('/users/:userID/followees/:followeeID', authorizeRequest, function (r
 });
 
 app.delete('/users/:userID/followers/:followerID', authorizeRequest, function (req, res) {
-    db.removeFollow(followerID,userID).then(() => {
+    db.removeFollow(parseInt(req.params.followerID),parseInt(req.params.userID)).then(() => {
         console.log("follow deleted");
         res.status(200).send("follower removed successfully");
     }).catch((err) => {
@@ -137,7 +138,8 @@ app.delete('/users/:userID/followers/:followerID', authorizeRequest, function (r
 });
 
 app.get('/users/:userID/followees', authorizeRequest, function (req, res) {
-    db.retrieveFollowing(userID).then((users) => {
+    console.log(req.params.userID)
+    db.retrieveFollowing(req.params.userID).then((users) => {
         res.json(users);
     }).catch((err) => {
         if (err) {
@@ -149,7 +151,7 @@ app.get('/users/:userID/followees', authorizeRequest, function (req, res) {
 });
 
 app.get('/users/:userID/followers', authorizeRequest, function (req, res) {
-    db.retrieveFollowers(userID).then((users) => {
+    db.retrieveFollowers(req.params.userID).then((users) => {
         res.json(users);
     }).catch((err) => {
         if (err) {
@@ -216,7 +218,7 @@ app.post('/users/:userID/goals', authorizeRequest, function (req, res) {
 });
 
 app.delete('/goals/:goalID', authorizeRequest, function (req, res) {
-    db.deleteGoal(goalID).then(() => {
+    db.deleteGoal(req.params.goalID).then(() => {
         console.log("goal deleted");
         res.status(200).send("goal deleted successfully");
     }).catch((err) => {
@@ -229,7 +231,7 @@ app.delete('/goals/:goalID', authorizeRequest, function (req, res) {
 });
 
 app.delete('/users/:userID/goals/:goalID', authorizeRequest, function (req, res) {
-    db.removeGoal(userID,goalID).then(() => {
+    db.removeGoal(req.params.userID,req.params.goalID).then(() => {
         console.log("goal removed");
         res.status(200).send("goal removed successfully");
     }).catch((err) => {

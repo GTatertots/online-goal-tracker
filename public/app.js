@@ -9,6 +9,7 @@ Vue.createApp({
             //user
             userUsername: "",
             userPassword: "",
+            confirmPassword: "",
             userEmail: "",
             userFirst: "",
             userLast: "",
@@ -28,6 +29,7 @@ Vue.createApp({
 
             userGoalSearch: "",
             userGoals: [],
+            userGoalIDs: [],
             
             goalStats: {},
 
@@ -36,17 +38,24 @@ Vue.createApp({
             stats: [],
 
             //users
+            currentUser: {},
             userSearch: "",
             users: [],
+            following: [],
+            followingIDs: [],
+            followers: [],
 
             //displays
             displayLogin: 0,
             displayMain: 1,
             displaySocial: 2,
-            displayGoals: 3,
-            displayCreateGoal: 4,
-            displayRegister: 5,
-            displaySingleGoalStats: 6,
+            displayFollowing: 3,
+            displayFollowers: 4,
+            displayGoals: 5,
+            displayCreateGoal: 6,
+            displayRegister: 7,
+            displaySingleGoalStats: 8,
+            displayOtherUserGoals: 9,
 
             display: 1,
             
@@ -64,6 +73,7 @@ Vue.createApp({
             this.userEmail = "";
             this.userFirst = "";
             this.userLast = ""; 
+            this.confirmPassword = "";
         },
 
         clearGoalFields: function () {
@@ -71,6 +81,20 @@ Vue.createApp({
             this.goalDescription = "";
             this.goalFrequency = "";
             this.goalTimeframe = "";
+        },
+
+        usersIncludes: function (collection, item) {
+            temp = [];
+            if (collection = "following") {
+                for (elt in this.following) {
+                    temp.push(elt.user_id);
+                }
+            } else if (collection = "followers") {
+                for (elt in this.followers) {
+                    temp.push(elt.user_id);
+                }
+            }
+            return temp.includes(item.user_id);
         },
 
         //sessions
@@ -154,7 +178,9 @@ Vue.createApp({
             }).then((response) => {
                 if (response.status == 201) {
                     console.log("user registered:", this.userEmail);
+                    const temp = this.userEmail;
                     this.clearUserFields();
+                    this.userEmail = temp;
                     this.display = this.displayLogin;
                     this.notifs.push("registered! please sign in");
                 } else {
@@ -202,16 +228,22 @@ Vue.createApp({
                 response.json().then((data) => {
                     console.log("loaded goals from server:", data);
                     this.userGoals = data;
+                    this.userGoalIDs = [];
                     for (goal of data) {
-                        this.updateStats(userID, goal.goal_id);
-                        this.getStatsFromServer(userID, goal.goal_id, 7);
+                        this.userGoalIDs.push(goal.goal_id);
+                        console.log(this.goalStats[goal.goal_id])
+                        if(this.goalStats[goal.goal_id] == undefined) {
+                            this.getStatsFromServer(userID, goal, 7, this.updateStats);
+                        } else {
+                            this.getStatsFromServer(userID, goal, 7);
+                        }
                     }
                 });
             });
         },
 
         getUsersFromServer: function () {
-            var path = "/users?condition=%";
+            var path = "/users?userID=" + this.sessionID + "&condition=%";
             if(this.userSearch) {
                 path += this.userSearch + "%";
             }
@@ -238,9 +270,28 @@ Vue.createApp({
         //social
         goSocial: function () {
             this.getUsersFromServer();
+            this.getFollowersFromServer();
+            this.getFollowingFromServer();
             this.display = this.displaySocial;
         },
+
+        goFollowing: function () {
+            this.getFollowingFromServer();
+            this.display = this.displayFollowing;
+        },
         
+        goFollowers: function () {
+            this.getFollowersFromServer();
+            this.getFollowingFromServer();
+            this.display = this.displayFollowers;
+        },
+
+        expandUser: function (user) {
+            this.currentUser = user;
+            this.getUserGoalsFromServer(user.user_id);
+            this.display = this.displayOtherUserGoals
+        },
+
         //goals
         goGoals: function () {
             this.getGoalsFromServer();
@@ -253,17 +304,17 @@ Vue.createApp({
 
         expandGoal: function (goal) {
             console.log(goal.goal_id);
-            this.expandedGoals.push(goal.goal_id);
-            console.log(this.expandedGoals)
-            //this.display = this.displaySingleGoalStats;
-            this.getStatsFromServer(this.sessionID,goal.goal_id);
+            this.expandedGoals.push(goal);
+            console.log("expandedGoals:",this.expandedGoals)
+            this.display = this.displaySingleGoalStats;
+            this.getStatsFromServer(this.sessionID,goal);
         },
         
         createAndAddGoal: function () {
             this.postGoalServer(this.addUserGoalServer);
             //this.addUserGoalServer(this.createdGoalId["lastID"]);
             //this.goHome();
-            this.notifs.push("Successfully Set Goal! You can now see it on this page");
+            //this.notifs.push("Successfully Set Goal! You can now see it on this page");
         },
 
         toggleStat: function(statOBJ) {
@@ -278,9 +329,8 @@ Vue.createApp({
         },
 
         updateStats: function(userID,goalID) {
-            this.getStatsFromServer(userID,goalID,1);
-            console.log(this.goalStats[goalID])
-            var latest = this.goalStats[goalID][0];
+            console.log(this.goalStats)
+            var latest = this.goalStats[goalID][this.goalStats[goalID].length - 1];
             console.log(latest.year, latest.month, latest.day);
             const d = new Date();
             var day = d.getDate();
@@ -294,7 +344,7 @@ Vue.createApp({
                     if (month == -1) {
                         year -= 1;
                         month = 11;
-                    }
+                        }
                     if(month in [0, 2, 4, 6, 7, 9, 11]) {
                         day = 31;
                     } else if(month in [3, 5, 8, 10]) {
@@ -326,7 +376,7 @@ Vue.createApp({
                     console.log("failed at server to create goal");
                 }
                 response.json().then((data) => {
-                    this.notifs.push("goal created succesfully");
+                    //this.notifs.push("goal created succesfully");
                     console.log(data)
                     this.createdGoalId = data;
                     callback(data['lastID']);
@@ -353,12 +403,13 @@ Vue.createApp({
                     console.log("set goal:", this.goalTitle);
                     this.clearGoalFields();
                     this.notifs.push("Set goal succesfully!");
-                    
+
                     //populating stats for newly added goal
                     const d = new Date();
                     var day = d.getDate();
                     var month = d.getMonth();
                     var year = d.getFullYear();
+                    this.postStatToServer(goalID, day, month, year);
                     for (var i = 0; i < 14; i++) {
                         day -= 1;
                         if (day == 0) {
@@ -389,11 +440,13 @@ Vue.createApp({
             });
         },
 
-        getStatsFromServer: function(userID, goalID, limit) {
-            console.log("getStats called with:", userID, goalID)
-            var path = "/users/" + userID + "/goals/" + goalID + "/stats";
+        getStatsFromServer: function(userID, goal, limit, callback) {
+            console.log("getStats called with:", userID, goal.goal_id)
+            var path = "/users/" + userID + "/goals/" + goal.goal_id + "/stats";
             if (limit) {
                 path += "?limit=" + limit;
+            } else {
+                path += "?limit=" + "90";
             }
             fetch(SERVER_URL + path, {
                 credentials: "include"
@@ -404,7 +457,23 @@ Vue.createApp({
                     return
                 }   
                 response.json().then((data) => {
-                    this.goalStats[goalID] = data;
+                    this.goalStats[goal.goal_id] = data.reverse();
+                    goal.completeCount = 0;
+                    for (i in this.goalStats[goal.goal_id]) {
+                        stat = this.goalStats[goal.goal_id][i];
+                        const d = stat.day;
+                        const m = stat.month;
+                        const y = stat.year;
+                        const date = new Date(y,m,d);
+                        //console.log(date);
+                        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                        this.goalStats[goal.goal_id][i].weekday = days[date.getDay()];
+                        
+                        if (stat.status == 1) {
+                            goal.completeCount += 1;
+                        }
+                    }
+                    callback(userID,goal.goal_id);
                 });
             }); 
         },
@@ -454,6 +523,118 @@ Vue.createApp({
 
             });
         },
+
+        getFollowingFromServer: function() {
+            var path = "/users/" + this.sessionID + "/followees";
+            fetch(SERVER_URL + path, {
+                credentials: "include"
+            }).then((response) => {
+                if(response.status == 401) {
+                    this.notifs.push("not logged in");
+                    this.display = this.displayLogin;
+                    return
+                } else {  
+                    response.json().then((data) => {
+                        this.following = data;
+                        this.followingIDs = [];
+                        for (i in data) {
+                            this.followingIDs.push(data[i].user_id)
+                        }
+                        console.log("following[0]:", this.following[0]);
+                    });
+                }
+            });
+        },
+        
+        getFollowersFromServer: function() {
+            var path = "/users/" + this.sessionID + "/followers";
+            fetch(SERVER_URL + path, {
+                credentials: "include"
+            }).then((response) => {
+                if(response.status == 401) {
+                    this.notifs.push("not logged in");
+                    this.display = this.displayLogin;
+                    return
+                } else {  
+                    response.json().then((data) => {
+                        this.followers = data; 
+                    });
+                }
+            });
+        },
+
+        followUserOnServer: function(user) {
+            var path = "/users/" + this.sessionID + "/followees";
+            var data = "followeeID=" + encodeURIComponent(user.user_id);
+            fetch(SERVER_URL + path, {
+                method: "POST",
+                body: data,
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            }).then((response) => {
+                if (response.status == 201) {
+                    console.log("user followed on server");
+                    this.following.push(user)
+                    this.getFollowingFromServer();
+                } else {
+                    console.error("failed to follow user:", response.json());
+                }
+            });
+        },
+        
+        unfollowUserOnServer: function(user) {
+            var path = "/users/" + this.sessionID + "/followees/" + user.user_id;
+            fetch(SERVER_URL + path, {
+                method: "DELETE",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            }).then((response) => {
+                if (response.status == 200) {
+                    console.log("user unfollowed on server");
+                    this.following.push(user)
+                    
+                    //this snippet removes instantly from dom before updating from server
+                    var index = this.following.indexOf(user);
+                    if (index !== -1) {
+                        this.following.splice(index, 1);
+                    }
+                    //
+
+                    this.getFollowingFromServer();
+                } else {
+                    console.error("failed to unfollow user:", response.json());
+                }
+            });
+        },
+        
+        removeFollowerOnServer: function(user) {
+            var path = "/users/" + this.sessionID + "/followers/" + user.user_id;
+            fetch(SERVER_URL + path, {
+                method: "DELETE",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            }).then((response) => {
+                if (response.status == 200) {
+                    console.log("user followed on server");
+                    
+                    var index = this.followers.indexOf(user);
+                    if (index !== -1) {
+                        this.followers.splice(index, 1);
+                    }
+                    this.getFollowersFromServer();
+
+                } else {
+                    console.error("failed to remove follower:", response.json());
+                }
+            });
+        },
+        
         
         //notifs
         clearNotifs: function() {

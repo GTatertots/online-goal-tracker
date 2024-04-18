@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Goal Tracker</title>
+    <title>Goals With Friends</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="app">
+    <div id="app" height="100%">
         <!-- everything vue manages goes here -->
         
         <div id="nav" v-show="display != displayLogin && display != displayRegister">
             <!-- navigation bar stuff -->
-            <h1>Goal Tracker</h1>
+            <h1>Goals With Friends</h1>
             <a @click="goHome" style="cursor:pointer">Home</a>
             <a @click="goSocial" style="cursor:pointer">Find People</a>
+            <a @click="goFollowing" style="cursor:pointer">Following</a>
+            <a @click="goFollowers" style="cursor:pointer">Followers</a>
             <a @click="goGoals" style="cursor:pointer">Explore Goals</a>
             <a @click="logout" style="cursor:pointer">Logout</a>
         </div>
@@ -27,15 +29,21 @@
         
         <div id="landing" v-show="display == displayLogin || display == displayRegister">
             <!-- everything login goes here -->   
+            <div class="row">
+            <div id="left">
+                <!-- img id="landingImage" src="sample-background.jpg" -->
+            </div>
+            <div id="right">
+                <h1>Goals With Friends</h1>
             <div class="centerBlock" v-show="display == displayLogin">
                 <h2>Let's Get Started</h2>
                 <div><input type="text" placeholder="email" v-model="userEmail"></div>
-                <div><input type="text" placeholder="password" v-model="userPassword"></div>
+                <div><input type="password" placeholder="password" v-model="userPassword"></div>
                 <div><button @click="login()">Log in</button></div>
                 <hr style="width: 80%">
                 <h3> Don't have an account? <a @click="goRegister()" style="cursor:pointer">Sign Up</a></h3>
             </div> 
-            
+           
             <div class="centerBlock" v-show="display == displayRegister"> 
                 <h2>Let's Get Started</h2>
                 <div><input type="text" placeholder="email" v-model="userEmail"></div>
@@ -44,11 +52,15 @@
                     <input style="width: 50%" type="text" placeholder="First" v-model="userFirst"> 
                     <input style="width: 50%" type="text" placeholder="Last" v-model="userLast">
                 </div>
-                <div><input type="text" placeholder="password" v-model="userPassword"></div>
+                <div><input type="password" placeholder="password" v-model="userPassword"></div>
+                <div><input type="password" placeholder="confirm password" v-model="confirmPassword"></div>
+                <div v-show="!(userPassword == confirmPassword)">*Passwords must match*</div>
                 <div><button @click="register()">Sign Up</button></div>
                 <hr style="width: 80%">
-                <h3> Don't have an account? <a @click="goLogin()">Log In</a><h3>
+                <h3> Don't have an account? <a @click="goLogin()" style="cursor:pointer">Log In</a><h3>
                 
+            </div>
+            </div>
             </div>
         </div>
 
@@ -62,62 +74,153 @@
             <div v-for="goal, i in userGoals">
                 <div class="column">
                     <div class="card">
-                        <div @click="expandGoal(goal)" style="cursor:pointer"><b> {{ goal.title }} </b></div>
-                        <div> {{ goal.description }} </div>
-                        <div> target: {{ goal.frequency }}/{{ goal.timeframe }} days </div>
-                        <table>
+                        <div @click="expandGoal(goal)" style="cursor:pointer"><h3> {{ goal.title }} </h3></div>
+                        <div><b> {{ goal.description }} </b></div>
+                        <table width="80%">
+                            <tr>
+                                <th v-for="stat in goalStats[goal.goal_id]"> {{ stat.weekday }} </th>
+                            </tr>
                             <tr>
                                 <th v-for="stat in goalStats[goal.goal_id]"> {{ stat.month + 1 }}/{{ stat.day }} </th>
                             </tr>
                             <tr>
                                 <td v-for="stat in goalStats[goal.goal_id]"
                                     @click="toggleStat(stat)" 
-                                    v-bind:style="{ backgroundColor: stat.status == 1 ? '#0E9700' : '#FE0006'}"
-                                    style="cursor:pointer">
+                                    v-bind:style="{ color: stat.status == 1 ? '#0E9700' : '#FE0006'}"
+                                    style="cursor:pointer; text-align:center">
                                     {{ stat.status == 1 ? '&#10004' : '&#10006' }}
                                 </td>
                             </tr>
                         </table>
+                        <div v-bind:style="{ color: (goal.completeCount/goalStats[goal.goal_id].length) >= (goal.frequency/goal.timeframe) ? '#0E9700' : '#FE0006'}"> target: {{ goal.frequency }}/{{ goal.timeframe }} days </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+       
+        <div v-show="display == displaySingleGoalStats">
+            <div v-for="goal in expandedGoals">
+                <div><h3> {{ goal.title }} </h3></div>
+                <div><b> {{ goal.description }} </b></div>
+                <div> target: {{ goal.frequency }}/{{ goal.timeframe }} days </div>
+                {{ goalStats[goal.goal_id].length }}
+                <table id="fullTable">
+                    <tr>
+                        <th>SUN</th>
+                        <th>MON</th>
+                        <th>TUE</th>
+                        <th>WED</th>
+                        <th>THU</th>
+                        <th>FRI</th>
+                        <th>SAT</th>
+                    </tr>
+                    <tr v-for="j in (goalStats[goal.goal_id].length/7)">
+                        <td> {{ j }} </td>
+                        <td v-for="i in 7"
+                            @click="toggleStat(goalStats[goal.goal_id][i + 7*j])" 
+                            v-bind:style="{ backgroundColor: goalStats[goal.goal_id][i + 7*(j-1)].status == 1 ? '#0E9700' : '#FE0006'}"
+                            style="cursor:pointer; text-align:center">
+                            {{ goalStats[goal.goal_id][i + 7*(j-1)].month + 1 }}/{{ goalStats[goal.goal_id][i + 7*(j-1)].day }}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div v-show="display == displayOtherUserGoals">
+            <h2>Now viewing {{ currentUser.first_name }} {{ currentUser.last_name}}'s goals</h2>
+            <div v-for="goal, i in userGoals">
+                <div class="column">
+                    <div class="card">
+                        <div @click="expandGoal(goal)" style="cursor:pointer"><b> {{ goal.title }} </b></div>
+                        <div> {{ goal.description }} </div>
+                        <table>
+                            <tr>
+                                <th v-for="stat in goalStats[goal.goal_id]"> {{ stat.weekday }} </th>
+                            </tr>
+                            <tr>
+                                <th v-for="stat in goalStats[goal.goal_id]"> {{ stat.month + 1 }}/{{ stat.day }} </th>
+                            </tr>
+                            <tr>
+                                <td v-for="stat in goalStats[goal.goal_id]"
+                                    v-bind:style="{ color: stat.status == 1 ? '#0E9700' : '#FE0006'}">
+                                                                         <!-- '#0E9700' : '#FE0006' -->
+                                    {{ stat.status == 1 ? '&#10004' : '&#10006' }}
+                                </td>
+                            </tr>
+                        </table>
+                        <div v-bind:style="{ color: (goal.completeCount/goalStats[goal.goal_id].length) >= (goal.frequency/goal.timeframe) ? '#0E9700' : '#FE0006'}"> target: {{ goal.frequency }}/{{ goal.timeframe }} days </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!--
+        
         <div v-show="display == displaySingleGoalStats">
             <div v-for="stat, i in stats" @click="toggleStat()">
                 <div> {{ stat.month }}/{{ stat.day }} </div>
                 <div> {{ stat.status }} </div>
             </div> 
         </div>
-        -->
+        
         
         <div v-show="display == displaySocial">
             <!-- everything on the social page goes here-->
             <input class="searchbar" type="text" placeholder="search users" v-on:keyup.enter="getUsersFromServer()" v-model="userSearch">
-            <div class="user" v-for="user in users" @click="expandUser(user)">
-                <div> {{ user.username }} </div>
-                <div> {{ user.first_name }} {{ user.last_name }} </div>
+            <div class="user" v-for="user in users" v-show="user.user_id != sessionID">
+                <div @click="expandUser(user)" style="cursor:pointer"><b> {{ user.username }} </b></div>
+                <div @click="expandUser(user)" style="cursor:pointer"> {{ user.first_name }} {{ user.last_name }} </div>
+                <div @click="expandUser(user)" style="cursor:pointer"> Similar goals: {{ user.count }} </div>
+                <div style="margin-top:10px">
+                    <a class="button" v-show="followingIDs.includes(user.user_id)" @click="unfollowUserOnServer(user)">Unfollow</a>
+                    <a class="button" v-show="!followingIDs.includes(user.user_id)" @click="followUserOnServer(user)">Follow</a>
+                </div>
             </div>
         </div>
     
+        
+        <div v-show="display == displayFollowing">
+            <!-- everything on the social page goes here-->
+            <div class="user" v-for="user in following" v-show="user.user_id != sessionID">
+                <div @click="expandUser(user)" style="cursor:pointer"><b> {{ user.username }} </b></div>
+                <div @click="expandUser(user)" style="cursor:pointer"> {{ user.first_name }} {{ user.last_name }} </div>
+                <div style="margin-top:10px">
+                    <a class="button" v-show="following.includes(user)" @click="unfollowUserOnServer(user)">Unfollow</a>
+                    <a class="button" v-show="!(following.includes(user))" @click="followUserOnServer(user)">Follow</a>
+                </div>
+            </div>
+        </div>
+        
+        <div v-show="display == displayFollowers">
+            <!-- everything on the social page goes here-->
+            <div class="user" v-for="user in followers" v-show="user.user_id != sessionID">
+                <div @click="expandUser(user)" style="cursor:pointer"><b> {{ user.username }} </b></div>
+                <div @click="expandUser(user)" style="cursor:pointer"> {{ user.first_name }} {{ user.last_name }} </div>
+                <div style="margin-top:10px">
+                    <a class="button" v-show="followingIDs.includes(user.user_id)" @click="unfollowUserOnServer(user)">Unfollow</a>
+                    <a class="button" v-show="!(followingIDs.includes(user.user_id))" @click="followUserOnServer(user)">Follow Back</a>
+                    <a class="button" v-show="followers.includes(user)" @click="removeFollowerOnServer(user)">Remove Follower</a>
+                </div>
+            </div>
+        </div>
+
 
         <div v-show="display == displayGoals">
             <!-- everything on the goals page goes here-->
-            viewing the explore goals page now
             <input class="searchbar" type="text" placeholder="search goals" v-on:keyup.enter="getGoalsFromServer()" v-model="goalSearch">
             <div v-show="goals.length == 0">No goals found. Add some and they'll show up here!</div>
             <div v-for="goal, i in goals" @click="expandGoal(goal)">
-                <div class="column">
+                <div class="column" v-show="!(userGoalIDs.includes(goal.goal_id))">
                     <div class="card">
-                        <div><b> {{ goal.title }} </b></div>
+                        <div><h3> {{ goal.title }} </h3></div>
                         <div> {{ goal.description }} </div>
                         <div> target: {{ goal.frequency }}/{{ goal.timeframe }} days </div>
-                        <div> <button @click="addUserGoalServer(goal.goal_id)">Set Goal</button></div>
+                        <div style="margin-top:10px"> <a class="button" @click="addUserGoalServer(goal.goal_id)">Set Goal</a></div>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="goalForm" v-show="display == displayCreateGoal">
             <!-- everything on the create goals page goes here-->
             <h2>Set a goal for yourself (and others!)</h2>
@@ -129,9 +232,10 @@
                 of every
                 <input type="number" placeholder="7" style="width: 32px" v-model="goalTimeframe">
                 days
-                <div><button @click="createAndAddGoal()">Set Goal</button></div>
+                <div style="margin-top:10px"><a class="button" @click="createAndAddGoal()">Set Goal</a></div>
             </div>
         </div>
+       
 
     </div>
     <script src="https://unpkg.com/vue@3"></script>
