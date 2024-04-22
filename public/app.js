@@ -1,4 +1,5 @@
-const SERVER_URL = "http://localhost:8080";
+//const SERVER_URL = "http://localhost:8080";
+const SERVER_URL = "https://goals-with-friends-6c700b071025.herokuapp.com/"
 
 Vue.createApp({
     data: function () {
