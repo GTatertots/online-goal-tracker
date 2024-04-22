@@ -19,10 +19,10 @@ app.use(session({
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true
-    //cookie: { 
-    //    secure: true,
-    //    sameSite: 'None'
-    //}  
+    cookie: { 
+        secure: true,
+        sameSite: 'None'
+    }  
 }))
 
 function authorizeRequest(req, res, next) { 
@@ -298,6 +298,6 @@ app.put('/stats/:statID', authorizeRequest, function (req, res) {
 });
 
 app.listen(port, function () {
-	console.log('Server running on port 8080...');
+	console.log('Server running on port', port, '...');
 });
 
