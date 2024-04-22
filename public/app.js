@@ -26,6 +26,7 @@ Vue.createApp({
             
             goalSearch: "",
             goals: [],
+            goalUsers: {},
 
             userGoalSearch: "",
             userGoals: [],
@@ -60,8 +61,8 @@ Vue.createApp({
             display: 1,
             
             //notifications
-            displayNotifs: false,
-            notifs: []
+            displayNotif: false,
+            notif: ""
         };
     },
     
@@ -109,7 +110,6 @@ Vue.createApp({
                 }
                 response.json().then(data => {
                     this.sessionID = data;
-                    console.log(this.sessionID);
                     this.getUserGoalsFromServer(this.sessionID);
                 });
             });
@@ -130,13 +130,12 @@ Vue.createApp({
                     console.log("user signed in:", this.userEmail);
                     this.clearUserFields();
                     this.getSession();
-                    this.display = this.displayMain;
-                    this.notifs.push("signed in successfully");
+                    this.notif = "signed in successfully";
                 } else {
                     console.error("failed to login");
-                    this.notifs.push("Incorrect email or password.");
+                    this.notif = "Incorrect email or password.";
                 }
-                this.displayNotifs = true;
+                this.displayNotif = true;
             });
         },
 
@@ -146,8 +145,8 @@ Vue.createApp({
                 credentials: "include"
             }).then((response) => {
                 this.display = this.displayLogin;
-                this.notifs.push("logged out successfully");
-                this.displayNotifs = true;
+                this.notif = "logged out successfully";
+                this.displayNotif = true;
             })
         },
 
@@ -182,12 +181,12 @@ Vue.createApp({
                     this.clearUserFields();
                     this.userEmail = temp;
                     this.display = this.displayLogin;
-                    this.notifs.push("registered! please sign in");
+                    this.notif = "registered! please sign in";
                 } else {
                     console.error("failed to login");
-                    this.notifs.push("user with email/username already exists.");
+                    this.notif = "user with email/username already exists.";
                 }
-                this.displayNotifs = true;
+                this.displayNotif = true;
             });
         },
         
@@ -208,6 +207,9 @@ Vue.createApp({
                 response.json().then((data) => {
                     console.log("loaded goals from server:", data);
                     this.goals = data;
+                    for (goal of data) {
+                        this.getSimilarUsers(goal.goal_id);
+                    }
                 })
             })
         },
@@ -227,12 +229,15 @@ Vue.createApp({
                 }
                 response.json().then((data) => {
                     console.log("loaded goals from server:", data);
-                    this.userGoals = data;
                     this.userGoalIDs = [];
+                    this.userGoals = [];
                     for (goal of data) {
+                        goal.completeCount = 0;
+
+                        var pair = { userID: userID, goal: goal }
+                        this.userGoals.push(pair);
                         this.userGoalIDs.push(goal.goal_id);
-                        console.log(this.goalStats[goal.goal_id])
-                        if(this.goalStats[goal.goal_id] == undefined) {
+                        if(this.goalStats[userID] == undefined) {
                             this.getStatsFromServer(userID, goal, 7, this.updateStats);
                         } else {
                             this.getStatsFromServer(userID, goal, 7);
@@ -251,7 +256,8 @@ Vue.createApp({
                 credentials: "include"
             }).then((response) => {
                 if(response.status == 401) {
-                    this.notifs.push("not logged in");
+                    this.notif = "not logged in";
+                    this.displayNotif = true;
                     this.display = this.displayLogin;
                     return
                 }   
@@ -263,8 +269,8 @@ Vue.createApp({
         
         //home
         goHome: function () {
+            this.expandedGoals = [];
             this.getUserGoalsFromServer(this.sessionID);
-            this.display = this.displayMain;
         },
 
         //social
@@ -294,6 +300,7 @@ Vue.createApp({
 
         //goals
         goGoals: function () {
+            this.getFollowingFromServer();
             this.getGoalsFromServer();
             this.display = this.displayGoals;
         },
@@ -302,42 +309,46 @@ Vue.createApp({
             this.display = this.displayCreateGoal;
         },
 
-        expandGoal: function (goal) {
-            console.log(goal.goal_id);
-            this.expandedGoals.push(goal);
-            console.log("expandedGoals:",this.expandedGoals)
-            this.display = this.displaySingleGoalStats;
-            this.getStatsFromServer(this.sessionID,goal);
+        expandGoal: function (userID,goal) {
+            var pair = { userID: userID, goal: goal }
+            this.expandedGoals.push(pair);
+            this.getSimilarUsers(goal.goal_id);
+            this.getStatsFromServer(userID,goal);
         },
         
         createAndAddGoal: function () {
             this.postGoalServer(this.addUserGoalServer);
             //this.addUserGoalServer(this.createdGoalId["lastID"]);
-            //this.goHome();
+            this.goHome();
             //this.notifs.push("Successfully Set Goal! You can now see it on this page");
         },
 
-        toggleStat: function(statOBJ) {
-            console.log(statOBJ);
+        toggleStat: function(statOBJ,goal) {
             var stat;
             if (statOBJ.status == 1) {
                 stat = 0;
+                goal.completeCount -= 1;
             } else {
                 stat = 1;
+                goal.completeCount += 1;
             }
             this.replaceStatOnServer(statOBJ, stat);
         },
 
         updateStats: function(userID,goalID) {
-            console.log(this.goalStats)
-            var latest = this.goalStats[goalID][this.goalStats[goalID].length - 1];
-            console.log(latest.year, latest.month, latest.day);
+            if (!this.goalStats[userID][goalID]) {
+                return
+            }
+            //This code is here to find the length of the object indirectly
+            const entriesArray = Object.entries(this.goalStats[userID][goalID]);
+            const count = entriesArray.length; 
+            var latest = this.goalStats[userID][goalID][count - 1];
             const d = new Date();
             var day = d.getDate();
             var month = d.getMonth();
             var year = d.getFullYear();
             while (day != latest.day || month != latest.month || year != latest.year) {
-                this.postStatToServer(goalID, day, month, year);
+                this.postStatToServer(userID, goalID, day, month, year);
                 day -= 1;
                 if (day == 0) {
                     month -= 1;
@@ -356,7 +367,7 @@ Vue.createApp({
                         }
                     }
                 }
-            }  
+            }
         },
 
         postGoalServer: function (callback) {
@@ -376,20 +387,18 @@ Vue.createApp({
                     console.log("failed at server to create goal");
                 }
                 response.json().then((data) => {
-                    //this.notifs.push("goal created succesfully");
-                    console.log(data)
+                    //this.notif = "goal created succesfully";
                     this.createdGoalId = data;
                     callback(data['lastID']);
                 });
                 
-                this.displayNotifs = true;
+                //this.displayNotif = true;
 
             });
 
         },
 
         addUserGoalServer: function (goalID) {
-            console.log(goalID);
             var data = "goalID=" + encodeURIComponent(goalID);
             fetch(SERVER_URL + "/users/" + this.sessionID + "/goals", {
                 method: "POST",
@@ -402,15 +411,16 @@ Vue.createApp({
                 if (response.status == 201) {
                     console.log("set goal:", this.goalTitle);
                     this.clearGoalFields();
-                    this.notifs.push("Set goal succesfully!");
-
+                    this.notif = "Set goal succesfully, you can now see it on your home page";
+                    this.displayNotif = true;
+                    this.userGoalIDs.push(goalID)
                     //populating stats for newly added goal
                     const d = new Date();
                     var day = d.getDate();
                     var month = d.getMonth();
                     var year = d.getFullYear();
-                    this.postStatToServer(goalID, day, month, year);
-                    for (var i = 0; i < 14; i++) {
+                    this.postStatToServer(this.sessionID, goalID, day, month, year);
+                    for (var i = 0; i < 7; i++) {
                         day -= 1;
                         if (day == 0) {
                             month -= 1;
@@ -429,24 +439,22 @@ Vue.createApp({
                                 }
                             }
                         }
-                        this.postStatToServer(goalID, day, month, year);
+                        this.postStatToServer(this.sessionID, goalID, day, month, year);
                     }
 
 
                 } else {
                     console.error("failed to add goal to user:", response.json());
                 }
-                this.goHome();
             });
         },
 
         getStatsFromServer: function(userID, goal, limit, callback) {
-            console.log("getStats called with:", userID, goal.goal_id)
             var path = "/users/" + userID + "/goals/" + goal.goal_id + "/stats";
             if (limit) {
                 path += "?limit=" + limit;
             } else {
-                path += "?limit=" + "90";
+                path += "?limit=90";
             }
             fetch(SERVER_URL + path, {
                 credentials: "include"
@@ -457,33 +465,41 @@ Vue.createApp({
                     return
                 }   
                 response.json().then((data) => {
-                    this.goalStats[goal.goal_id] = data.reverse();
-                    goal.completeCount = 0;
-                    for (i in this.goalStats[goal.goal_id]) {
-                        stat = this.goalStats[goal.goal_id][i];
+                    if (this.goalStats[userID] == undefined) {
+                        this.goalStats[userID] = {};
+                    }
+                    this.goalStats[userID][goal.goal_id] = data.reverse();
+                    for (key in this.goalStats[userID][goal.goal_id]) {
+                        stat = this.goalStats[userID][goal.goal_id][key];
                         const d = stat.day;
                         const m = stat.month;
                         const y = stat.year;
                         const date = new Date(y,m,d);
-                        //console.log(date);
                         const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-                        this.goalStats[goal.goal_id][i].weekday = days[date.getDay()];
-                        
+                        this.goalStats[userID][goal.goal_id][key].weekday = days[date.getDay()];
+
                         if (stat.status == 1) {
                             goal.completeCount += 1;
                         }
                     }
-                    callback(userID,goal.goal_id);
+                    if (callback) {
+                        callback(userID,goal.goal_id);
+                    }
+                    if (userID == this.sessionID && limit == 7) {
+                        this.display = this.displayMain;
+                    } else {
+                        this.display = this.displaySingleGoalStats;
+                    }
                 });
             }); 
         },
 
-        postStatToServer: function(goalID, day, month, year) {
+        postStatToServer: function(userID, goalID, day, month, year) {
             var data = "day=" + encodeURIComponent(day);
             data += "&month=" + encodeURIComponent(month);
             data += "&year=" + encodeURIComponent(year);
             data += "&stat=" + encodeURIComponent("0");
-            fetch(SERVER_URL + "/users/" + this.sessionID + "/goals/" + goalID + "/stats" , {
+            fetch(SERVER_URL + "/users/" + userID + "/goals/" + goalID + "/stats" , {
                 method: "POST",
                 body: data,
                 credentials: "include",
@@ -493,6 +509,7 @@ Vue.createApp({
             }).then((response) => {
                 if (response.status == 201) {
                     console.log("stat created succesfully");
+                    this.getStatsFromServer(userID,goalID,7)
                 } else {
                     console.error("failed to create stat:", response.json());
                 }
@@ -501,7 +518,6 @@ Vue.createApp({
         },
         
         replaceStatOnServer: function(statOBJ, stat) {
-            console.log(statOBJ);
             var path = "/stats/" + statOBJ.stat_id;
             var data = "stat=" + encodeURIComponent(stat);
             fetch(SERVER_URL + path, {
@@ -514,13 +530,28 @@ Vue.createApp({
             }).then((response) => {
                 if (response.status == 200) {
                     console.log("stat updated on server");
-                    console.log("stat before:", statOBJ.status);
                     statOBJ.status = stat;
-                    console.log("stat after:", statOBJ.status);
                 } else {
                     console.error("failed to update stat:", response.json());
                 }
 
+            });
+        },
+
+        getSimilarUsers: function(goalID) {
+            var path = "/goals/" + goalID + "/users";
+            fetch(SERVER_URL + path, {
+                credentials: "include"
+            }).then((response) => {
+                if (response.status == 401) {
+                    this.notif = "Login Expired. Please sign in.";
+                    this.displayNotif = true;
+                    this.display = this.displayLogin; 
+                } else {
+                    response.json().then((data) => {
+                        this.goalUsers[goalID] = data;
+                    });
+                }
             });
         },
 
@@ -530,7 +561,8 @@ Vue.createApp({
                 credentials: "include"
             }).then((response) => {
                 if(response.status == 401) {
-                    this.notifs.push("not logged in");
+                    this.notif = "Login Expired. Please sign in.";
+                    this.displayNotif = true;
                     this.display = this.displayLogin;
                     return
                 } else {  
@@ -540,7 +572,6 @@ Vue.createApp({
                         for (i in data) {
                             this.followingIDs.push(data[i].user_id)
                         }
-                        console.log("following[0]:", this.following[0]);
                     });
                 }
             });
@@ -552,7 +583,8 @@ Vue.createApp({
                 credentials: "include"
             }).then((response) => {
                 if(response.status == 401) {
-                    this.notifs.push("not logged in");
+                    this.notifs = "Login Expired. Please sign in.";
+                    this.displayNotif = true;
                     this.display = this.displayLogin;
                     return
                 } else {  
@@ -637,17 +669,9 @@ Vue.createApp({
         
         
         //notifs
-        clearNotifs: function() {
-            this.displayNotifs = false;
-            this.notifs = [];
-        },
-
-        removeNotif: function(i) {
-            this.notifs.splice(i, 1);
-            if(this.notifs.length == 0) {
-                this.displayNotifs = false;
-            }
-        },
+        removeNotif: function() {
+            this.displayNotif = false;
+        }
 
 
     },

@@ -3,7 +3,7 @@ const db = require("./data_model.js");
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
-
+require('dotenv').config({ path: './.env' });
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -16,7 +16,7 @@ app.use(cors({
     }
 }));
 app.use(session({
-    secret: 'fadsbjvirpoweruvklxnvldfjgaznxcvkjoue',
+    secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true
     //cookie: { 
@@ -172,6 +172,18 @@ app.get('/goals', authorizeRequest, function (req, res) {
             res.status(500).send("server failed to retrieve followers");
         }
     }); 
+});
+
+app.get('/goals/:goalID/users', authorizeRequest, function (req, res) {
+    db.retrieveGoalUsers(req.params.goalID).then((users) => {
+        res.json(users);
+    }).catch((err) => {
+        if (err) {
+            res.status(404).json(err);
+        } else {
+            res.status(500).send("server failed to retrieve goal users");
+        }
+    });
 });
 
 app.get('/users/:userID/goals', authorizeRequest, function (req, res) {
