@@ -82,10 +82,10 @@
 
         <div v-show="display == displayMain">
             <!-- everything on the main page goes here-->
+            <a class="button" @click="goCreateGoal">Create a goal!</a>
             <input class="searchbar" type="text" placeholder="search goals" v-on:keyup="getUserGoalsFromServer(sessionID)" v-model="userGoalSearch">
+            <a class="button" @click="goGoals">Explore other goals!</a>
             <div v-show="userGoals.length == 0">No goals found. Add some and they'll show up here!</div>
-            <button @click="goCreateGoal">Create a goal!</button>
-            <button @click="goGoals">Find a goal!</button>
             <div v-for="pair, i in userGoals">
                 <div class="column">
                     <div class="userGoal">
