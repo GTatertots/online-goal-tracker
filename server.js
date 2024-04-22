@@ -297,7 +297,7 @@ app.put('/stats/:statID', authorizeRequest, function (req, res) {
     });
 });
 
-app.listen(8080, function () {
+app.listen(port, function () {
 	console.log('Server running on port 8080...');
 });
 
