@@ -89,6 +89,7 @@
             <div v-for="pair, i in userGoals">
                 <div class="column">
                     <div class="userGoal">
+                        <span style="float:right; cursor:pointer" @click="removeUserGoalServer(pair.goal.goal_id)">&#10006</span>
                         <div @click="expandGoal(sessionID,pair.goal)" style="cursor:pointer"><h3> {{ pair.goal.title }} </h3></div>
                         <div><b> {{ pair.goal.description }} </b></div>
                         <table width="80%">

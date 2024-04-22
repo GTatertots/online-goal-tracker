@@ -450,6 +450,26 @@ Vue.createApp({
             });
         },
 
+        removeUserGoalServer: function(goalID) {
+            var path = "/users/" + this.sessionID + "/goals/" + goalID;
+            fetch(SERVER_URL + path, {
+                method: "DELETE",
+                credentials: "include"
+            }).then((response) => {
+                if (response.status == 200) {
+                    console.log("goal removed:", goalID);
+                    delete this.userGoals[this.sessionID][goalID];
+                    const index = this.userGoalIDs.indexOf(goalID);
+
+                    const x = this.userGoalIDs.splice(index, 1);
+                    console.log("goal popped from userGoalIDs:", x)
+
+                } else {
+                    console.log("failed to delete goal")
+                }
+            });
+        },
+
         getStatsFromServer: function(userID, goal, limit, callback) {
             var path = "/users/" + userID + "/goals/" + goal.goal_id + "/stats";
             if (limit) {
