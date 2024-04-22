@@ -19,10 +19,10 @@ app.use(session({
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { 
+    /*cookie: { 
         secure: true,
         sameSite: 'None'
-    }  
+    }*/ 
 }))
 
 function authorizeRequest(req, res, next) { 
@@ -31,7 +31,7 @@ function authorizeRequest(req, res, next) {
     if (req.session && req.session.userID) {
         db.retrieveUser(req.session.userID).then(function (user) {
             if (user) {
-              //req.userID = user.user_id;
+              req.userID = user.user_id;
               next();
             } else {
               res.status(401).send("Unauthenticated");
