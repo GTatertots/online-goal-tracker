@@ -458,12 +458,13 @@ Vue.createApp({
             }).then((response) => {
                 if (response.status == 200) {
                     console.log("goal removed:", goalID);
-                    delete this.userGoals[this.sessionID][goalID];
+                    /*delete this.userGoals[this.sessionID][goalID];
                     const index = this.userGoalIDs.indexOf(goalID);
 
                     const x = this.userGoalIDs.splice(index, 1);
                     console.log("goal popped from userGoalIDs:", x)
-
+                    */
+                    this.getUserGoalsFromServer(this.sessionID);
                 } else {
                     console.log("failed to delete goal")
                 }
