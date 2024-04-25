@@ -8,7 +8,7 @@
     <div id="app" height="100%">
         <!-- everything vue manages goes here -->
         
-        <div id="nav" v-show="display != displayLogin && display != displayRegister">
+        <div id="nav" v-if="display != displayLogin && display != displayRegister">
             <!-- navigation bar stuff -->
             <h1>Goals With Friends</h1>
             <a @click="goHome" style="cursor:pointer">Home</a>
@@ -26,7 +26,7 @@
         </div>
         </Transition>
 
-        <div id="landing" v-show="display == displayLogin || display == displayRegister">
+        <div id="landing" v-if="display == displayLogin || display == displayRegister">
             <!-- everything login goes here -->   
             <div class="row">
             <div id="left">
@@ -80,7 +80,7 @@
         </div>
 
 
-        <div v-show="display == displayMain">
+        <div v-if="display == displayMain">
             <!-- everything on the main page goes here-->
             <a class="button" @click="goCreateGoal">Create a goal!</a>
             <input class="searchbar" type="text" placeholder="search goals" v-on:keyup="getUserGoalsFromServer(sessionID)" v-model="userGoalSearch">
@@ -119,11 +119,15 @@
                 <div><h2> {{ pair.goal.title }} </h2></div>
                 <div><h3> {{ pair.goal.description }} </h3></div>
                 <div><b> target: {{ pair.goal.frequency }}/{{ pair.goal.timeframe }} days </b></div>
+                <template v-if="goalStats[pair.userID] != undefined">
                 <table>
                     <tr>
-                        <th v-for="i in 7">{{ goalStats[pair.userID][pair.goal.goal_id][i-1].weekday }} </th>
+                        <template v-for="i in 7">
+                            <th v-if="goalStats[pair.userID][pair.goal.goal_id].weekday != undefined">{{ goalStats[pair.userID][pair.goal.goal_id][i-1].weekday }} </th>
+                        </template>
                     </tr>
-                    <template v-for="_, i in goalStats[pair.userID][pair.goal.goal_id]">
+                    <template v-for="_, i in goalStats[pair.userID][pair.goal.goal_id]"
+                        v-if="goalStats[pair.userID] != undefined">
                     <tr v-if="i % 7 == 0">
                         <template v-for="j in 7"> 
                         <td v-if="i + j <= goalStats[pair.userID][pair.goal.goal_id].length"
@@ -145,6 +149,7 @@
                     </tr>
                     </template>
                 </table>
+                </template>
             </div>
             <span v-if="expandedGoals.length == 1">
                 <h2 style="text-align:center">Compare against other users with same goal</h2>
@@ -183,7 +188,7 @@
         </div>
         
         
-        <div v-show="display == displaySingleGoalStats">
+        <div v-if="display == displaySingleGoalStats">
             <div v-for="stat, i in stats" @click="toggleStat()">
                 <div> {{ stat.month }}/{{ stat.day }} </div>
                 <div> {{ stat.status }} </div>
@@ -191,7 +196,7 @@
         </div>
         
         
-        <div v-show="display == displaySocial">
+        <div v-if="display == displaySocial">
             <!-- everything on the social page goes here-->
             <input class="searchbar" type="text" placeholder="search users" v-on:keyup="getUsersFromServer()" v-model="userSearch">
             <div style="text-align:center" v-show="users.length == 0"><h2>No users found</h2></div>
@@ -207,7 +212,7 @@
         </div>
     
         
-        <div v-show="display == displayFollowing">
+        <div v-if="display == displayFollowing">
             <!-- everything on the social page goes here-->
             <div style="text-align:center" v-show="following.length == 0"><h2>No users found. Get Following!</h2></div>
             <div class="user" v-for="user in following" v-show="user.user_id != sessionID">
@@ -220,7 +225,7 @@
             </div>
         </div>
         
-        <div v-show="display == displayFollowers">
+        <div v-if="display == displayFollowers">
             <!-- everything on the social page goes here-->
             <div style="text-align:center" v-show="followers.length == 0"><h2>No Followers Found</h2></div>
             <div class="user" v-for="user in followers" v-show="user.user_id != sessionID">
@@ -235,7 +240,7 @@
         </div>
 
 
-        <div v-show="display == displayGoals">
+        <div v-if="display == displayGoals">
             <!-- everything on the goals page goes here-->
             <input class="searchbar" type="text" placeholder="search goals" v-on:keyup="getGoalsFromServer()" v-model="goalSearch">
             <div style="text-align:center" v-show="goals.length == 0"><h2>No goals found. Add some and they'll show up here!</h2></div>
@@ -247,9 +252,12 @@
                         <div> target: {{ goal.frequency }}/{{ goal.timeframe }} days </div>
                         <div style="margin-top:20px"> <a class="button" @click="addUserGoalServer(goal.goal_id)">Set Goal</a></div>
                         <h4>Users that you follow have this goal:</h4>
-                        <template v-for="user in goalUsers[goal.goal_id]">
-                        <div v-if="followingIDs.includes(user.user_id)">
+                        <template v-for="user, j in goalUsers[goal.goal_id]">
+                        <div v-if="followingIDs.includes(user.user_id) && j < 2">
                             {{ user.username }}
+                        </div>
+                        <div v-if="j == 2">
+                            ...
                         </div>
                         </template>
                     </div>

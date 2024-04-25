@@ -1,5 +1,5 @@
-//const SERVER_URL = "http://localhost:8080";
-const SERVER_URL = "https://goals-with-friends-6c700b071025.herokuapp.com";
+const SERVER_URL = "http://localhost:8080";
+//const SERVER_URL = "https://goals-with-friends-6c700b071025.herokuapp.com";
 
 Vue.createApp({
     data: function () {
@@ -296,7 +296,6 @@ Vue.createApp({
         expandUser: function (user) {
             this.currentUser = user;
             this.getUserGoalsFromServer(user.user_id);
-            this.display = this.displayOtherUserGoals
         },
 
         //goals
@@ -509,6 +508,8 @@ Vue.createApp({
                     }
                     if (userID == this.sessionID && limit == 7) {
                         this.display = this.displayMain;
+                    } else if (userID != this.sessionID & limit == 7) {
+                        this.display = this.displayOtherUserGoals;
                     } else {
                         this.display = this.displaySingleGoalStats;
                     }
