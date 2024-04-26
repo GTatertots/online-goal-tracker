@@ -506,7 +506,10 @@ Vue.createApp({
                     if (callback) {
                         callback(userID,goal.goal_id);
                     }
-                    if (userID == this.sessionID && limit == 7) {
+                    if (this.display == this.displayGoals) {
+                        
+                    }
+                    else if (userID == this.sessionID && limit == 7) {
                         this.display = this.displayMain;
                     } else if (userID != this.sessionID & limit == 7) {
                         this.display = this.displayOtherUserGoals;
