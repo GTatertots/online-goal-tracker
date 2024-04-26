@@ -234,6 +234,7 @@ Vue.createApp({
                     console.log("loaded goals from server:", data);
                     this.userGoalIDs = [];
                     this.userGoals = [];
+                    console.log(data);
                     if (data == []) {
                         this.display = this.displayMain;
                     }
