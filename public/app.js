@@ -63,7 +63,9 @@ Vue.createApp({
             
             //notifications
             displayNotif: false,
-            notif: ""
+            notif: "",
+
+            justAddedGoal: false
         };
     },
     
@@ -419,6 +421,7 @@ Vue.createApp({
                     var day = d.getDate();
                     var month = d.getMonth();
                     var year = d.getFullYear();
+                    this.justAddedGoal = true;
                     this.postStatToServer(this.sessionID, goalID, day, month, year);
                     for (var i = 0; i < 7; i++) {
                         day -= 1;
@@ -506,8 +509,8 @@ Vue.createApp({
                     if (callback) {
                         callback(userID,goal.goal_id);
                     }
-                    if (this.display == this.displayGoals) {
-                        
+                    if (this.justAddedGoal) {
+                        this.justAddedGoal = false;
                     }
                     else if (userID == this.sessionID && limit == 7) {
                         this.display = this.displayMain;
