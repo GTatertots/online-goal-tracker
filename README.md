@@ -4,6 +4,8 @@ Goals with friends is a web application designed to help users track all of thei
 
 This application uses a mainly Javascript stack, it utilizes Vue for frontend, Express for backend, and SQLite3 for database management. This project was conceptualized for a Senior Project.
 
+![alt text](https://github.com/GTatertots/online-goal-tracker/blob/main/image.jpg?raw=true)
+
 ## Resource
 
 **Goals**
